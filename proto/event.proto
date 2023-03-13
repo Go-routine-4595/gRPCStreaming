@@ -1,0 +1,24 @@
+syntax = "proto3";
+option go_package = "gRPCStreaming/proto";
+// protoc --go_out=/home/chris/Documents/Dev/go/src  --go-grpc_out=/home/chris/Documents/Dev/go/src event.proto
+// for protobuf struct only
+// protoc --go_out=/home/chris/Documents/Dev/go/src event.proto
+// for gRPC methods only
+// protoc --go-grpc_out=/home/chris/Documents/Dev/go/src event.proto
+
+package event.grpc;
+
+message Request {
+  string term       = 1;
+  int32 max_result  = 2;
+}
+
+message Response {
+  string matched_term = 1;
+  string content      = 2;
+  int32 rank          = 3;
+}
+
+service Event {
+  rpc GetEvent(Request) returns ( stream Response);
+}
