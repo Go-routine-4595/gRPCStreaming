@@ -59,7 +59,7 @@ nh1ue2FPwEJwp2Mh2ih1oUby7iKYX3O+bonTknVSq4OGHGdB9rGziPIPPYMOwcaR
 zCJK87MHdmP85e0Wpkk6dY/4xTH1OLAc0qxAUcUPFBf0SS/Sw+xJiHU9ovHpeAp5
 O2SAA+FsG/IWQtt656JfyftucYAmUQ==
 -----END PRIVATE KEY-----`
-
+	//symetric key if we want to use symetric crypto HMAC
 	key = "62erSGDG35wWn55KkE7QPwMNMFs3n/BkdFXNKt7WrHY="
 )
 
@@ -79,11 +79,13 @@ type Service struct {
 var serviceToken Service
 
 func init() {
-	serviceToken.secretKey = key
+	serviceToken.secretKey = skey
 	serviceToken.authMethods = map[string]bool{
 		"/event.grpc.Event/GetEvent": true,
 	}
-	serviceToken.kid = "titi"
+	// skey -> kid = toto
+	// key -> kid = titi
+	serviceToken.kid = "toto"
 	serviceToken.UserClaims.Issuer = "client.toto.com"
 	serviceToken.UserClaims.Id = "myid"
 	serviceToken.UserClaims.Role = "admin"
@@ -91,22 +93,17 @@ func init() {
 }
 
 func (s Service) token() string {
-	// below uses RSA crypto
-	//privateKey, err := jwt.ParseRSAPrivateKeyFromPEM([]byte(serviceToken.secretKey))
-	//if err != nil {
-	//	log.Fatal("Error while loading private key: ", err)
-	//}
-	//token := jwt.NewWithClaims(jwt.SigningMethodRS256, s.UserClaims)
+	// below uses asymetric crypto
+	privateKey, err := jwt.ParseRSAPrivateKeyFromPEM([]byte(serviceToken.secretKey))
+	if err != nil {
+		log.Fatal("Error while loading private key: ", err)
+	}
+	token := jwt.NewWithClaims(jwt.SigningMethodRS256, s.UserClaims)
 
-	//below use asymetric crypto
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, s.UserClaims)
 	token.Header["kid"] = serviceToken.kid
 	token.Header["x5u"] = "http://www.toto.com/titi.pem"
 
-	// below uses RSA crypto
-	//ss, err := token.SignedString(privateKey)
-
-	ss, err := token.SignedString([]byte(serviceToken.secretKey))
+	ss, err := token.SignedString(privateKey)
 	if err != nil {
 		log.Fatal("Error while signing: ", err)
 	}

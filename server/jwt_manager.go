@@ -29,13 +29,9 @@ type UserClaims struct {
 }
 
 func accessibleRoles() map[string][]string {
-	const laptopServicePath = "/techschool.pcbook.LaptopService/"
 
 	return map[string][]string{
-		laptopServicePath + "CreateLaptop": {"admin"},
-		laptopServicePath + "UploadImage":  {"admin"},
-		laptopServicePath + "RateLaptop":   {"admin", "user"},
-		"/event.grpc.Event/GetEvent":       {"admin", "user"},
+		"/event.grpc.Event/GetEvent": {"admin", "user"},
 	}
 }
 
@@ -101,10 +97,14 @@ func (manager *JWTManager) Verify(accessToken string) (*UserClaims, error) {
 			xfu, _ := token.Header["x5u"].(string)
 			fmt.Println(kid)
 			fmt.Println(xfu)
+
+			// check if HMAC is used (symetric cryto)
 			_, ok = token.Method.(*jwt.SigningMethodHMAC)
 			if !ok {
+				// it was not HMAC then check if it's asymmetric crypto RSA used
 				_, ok := token.Method.(*jwt.SigningMethodRSA)
 				if !ok {
+					// neither one we don't reconized the crypto we are leaving!
 					return nil, fmt.Errorf("unexpected token signing method")
 				}
 				publicKey, err := jwt.ParseRSAPublicKeyFromPEM([]byte(keyManager.keymap[kid]))
