@@ -4,7 +4,7 @@ This is a toy project using gRPC streaming capability and the interception metho
 
 It uses TLS to secure the connection with x.509 certificate
 
-It uses  a JWT token to for the authorization.
+It uses  a JWT token for the authorization.
 
 To connect you need to present the right certificate (mutual authentication between the client and the server)
 
